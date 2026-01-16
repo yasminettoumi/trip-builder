@@ -14,7 +14,6 @@ class TripBuilderService
     {
         $departureDate = Carbon::parse($data['departure_date']);
 
-        // Validation dates
         if ($departureDate->isBefore(now()->startOfDay())) {
             throw ValidationException::withMessages([
                 'departure_date' => 'Departure date must be in the future.',
@@ -30,7 +29,6 @@ class TripBuilderService
         $fromAirport = Airport::where('code', $data['from'])->firstOrFail();
         $toAirport = Airport::where('code', $data['to'])->firstOrFail();
 
-        // Vol aller
         $outboundFlight = Flight::where('departure_airport_id', $fromAirport->id)
             ->where('arrival_airport_id', $toAirport->id)
             ->firstOrFail();
@@ -44,7 +42,6 @@ class TripBuilderService
 
         $totalPrice = $outboundFlight->price;
 
-        // Aller-retour
         if ($data['type'] === 'round_trip') {
             if (empty($data['return_date'])) {
                 throw ValidationException::withMessages([
