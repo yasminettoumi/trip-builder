@@ -15,7 +15,7 @@ class TripBuilderService
         $departureDate = Carbon::parse($data['departure_date']);
 
         // Validation dates
-        if ($departureDate->isPast()) {
+        if ($departureDate->isBefore(now()->startOfDay())) {
             throw ValidationException::withMessages([
                 'departure_date' => 'Departure date must be in the future.',
             ]);
@@ -46,11 +46,29 @@ class TripBuilderService
 
         // Aller-retour
         if ($data['type'] === 'round_trip') {
+            if (empty($data['return_date'])) {
+                throw ValidationException::withMessages([
+                    'return_date' => 'Return date is required for round trip.',
+                ]);
+            }
+
+            $returnDate = Carbon::parse($data['return_date']);
+
+            if ($returnDate->isBefore(now()->startOfDay())) {
+                throw ValidationException::withMessages([
+                    'return_date' => 'Return date must be in the future.',
+                ]);
+            }
+
+            if ($returnDate->greaterThan(now()->addDays(365))) {
+                throw ValidationException::withMessages([
+                    'return_date' => 'Return date must be within 365 days.',
+                ]);
+            }
+
             $returnFlight = Flight::where('departure_airport_id', $toAirport->id)
                 ->where('arrival_airport_id', $fromAirport->id)
                 ->firstOrFail();
-
-            $returnDate = $departureDate->copy()->addDays(3);
 
             $flights[] = [
                 'flight' => $returnFlight,

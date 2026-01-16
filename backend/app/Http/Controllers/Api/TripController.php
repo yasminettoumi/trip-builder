@@ -19,6 +19,7 @@ class TripController extends Controller
             'from' => 'required|string|size:3',
             'to' => 'required|string|size:3',
             'departure_date' => 'required|date',
+            'return_date' => 'nullable|date|after:departure_date',
             'type' => 'required|in:one_way,round_trip',
         ]);
 
